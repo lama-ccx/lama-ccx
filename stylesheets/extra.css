@@ -1,0 +1,136 @@
+:root {
+  --md-primary-fg-color: #000000;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: #000000;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1a1a1a;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: #ffffff;
+}
+
+/* Clean header */
+.md-header {
+  box-shadow: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Logo: show dark logo in light mode, white logo in dark mode */
+.md-header__button.md-logo img,
+.md-nav__button.md-logo img {
+  content: url("../assets/logo.png");
+}
+
+[data-md-color-scheme="slate"] .md-header__button.md-logo img,
+[data-md-color-scheme="slate"] .md-nav__button.md-logo img {
+  content: url("../assets/logo-white.png");
+}
+
+/* Minimal link styling */
+.md-content a {
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  color: #000000;
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-content a {
+  color: #ffffff;
+}
+
+.md-content a:hover {
+  opacity: 0.7;
+}
+
+/* Bold site name in header */
+.md-header__topic .md-ellipsis {
+  font-weight: 700;
+  color: #000000;
+}
+
+[data-md-color-scheme="slate"] .md-header__topic .md-ellipsis {
+  color: #ffffff;
+}
+
+/* Hide duplicate site name at top of sidebar */
+.md-nav--primary > .md-nav__title {
+  display: none;
+}
+
+/* Bold top-level nav section labels (Basics, Examples, References) */
+.md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav__link .md-ellipsis {
+  font-weight: 700;
+  color: #000000;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav__link .md-ellipsis {
+  color: #ffffff;
+}
+
+/* Grey-only admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 12px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  border: 1px solid #444444 !important;
+}
+
+.md-typeset .admonition > .admonition-title,
+.md-typeset details > summary {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid #d0d0d0;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition > .admonition-title,
+[data-md-color-scheme="slate"] .md-typeset details > summary {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid #444444;
+}
+
+.md-typeset .admonition > .admonition-title::before,
+.md-typeset details > summary::before {
+  color: #757575;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition > .admonition-title::before,
+[data-md-color-scheme="slate"] .md-typeset details > summary::before {
+  color: #aaaaaa;
+}
+
+/* Buttons – black/white palette */
+.md-typeset .md-button {
+  color: #000000;
+  border: 2px solid #000000;
+  background: transparent;
+  font-weight: 600;
+  border-radius: 24px;
+  padding: 0.6em 1.6em;
+}
+
+.md-typeset .md-button:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button:hover {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}

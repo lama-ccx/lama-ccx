@@ -1,0 +1,79 @@
+site_name: Lama
+site_description: Lama – CalculiX wrapper for Grasshopper
+site_author: Marco Pellegrino
+site_url: https://pellegrino-research-group.github.io/Lama/
+docs_dir: .
+site_dir: ../site
+
+repo_name: pellegrino-research-group/Lama
+repo_url: https://github.com/pellegrino-research-group/Lama
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: black
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: white
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: Roboto Mono
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Lama:
+      - Home: index.md
+      - Installation: installation.md
+  - Basics:
+      - Materials: basics/materials.md
+      - Sections: basics/sections.md
+      - Elements: basics/elements.md
+      - Meshing: basics/meshing.md
+      - Boundary Conditions: basics/boundary-conditions.md
+      - Loads: basics/loads.md
+      - Steps: basics/steps.md
+      - Assemble Model: basics/assemble.md
+      - Analysis: basics/analysis.md
+      - Results: basics/results.md
+  - Examples:
+      - Cantilever Beam: examples/cantilever-beam.md
+  - References:
+      - CalculiX: references/calculix.md
+      - License: references/license.md
