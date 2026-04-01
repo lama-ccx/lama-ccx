@@ -1,5 +1,5 @@
 name: Llama
-version: 0.0.3
+version: 0.0.1
 authors:
 - Marco Pellegrino
 description: Grasshopper plugin that wraps CalculiX, an open-source finite element

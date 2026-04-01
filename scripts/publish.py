@@ -3,9 +3,9 @@
 Publish script for Llama Grasshopper plugin to Yak package manager.
 
 Usage:
-    python publish.py --version 1.0.0                    # Build and create package
-    python publish.py --version 1.0.0 --publish          # Build, package, and publish
-    python publish.py --version 1.0.0 --publish --test   # Publish to test server
+    python3 publish.py --version 1.0.0                    # Build and create package
+    python3 publish.py --version 0.0.1 --publish          # Build, package, and publish
+    python3 publish.py --version 1.0.0 --publish --test   # Publish to test server
 """
 
 import argparse
