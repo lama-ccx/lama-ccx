@@ -177,6 +177,7 @@ namespace Llama.Gh.Components
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("Tetra Meshes", "T", "Tetrahedral meshes (one per element, V:4 F:4).", GH_ParamAccess.list);
+            pManager.AddPointParameter("Nodes", "N", "Unique mesh nodes.", GH_ParamAccess.list);
             pManager.AddTextParameter("Log", "L", "Gmsh console output (stdout + stderr).", GH_ParamAccess.item);
         }
 
@@ -284,14 +285,16 @@ namespace Llama.Gh.Components
                     out gmshLog);
 
                 var tetraMeshes = BuildTetraMeshes(model);
+                var nodes = model.Nodes.Select(n => new Point3d(n.X, n.Y, n.Z)).ToList();
 
                 DA.SetDataList(0, tetraMeshes);
-                DA.SetData(1, gmshLog);
+                DA.SetDataList(1, nodes);
+                DA.SetData(2, gmshLog);
             }
             catch (Exception ex)
             {
                 if (gmshLog != null)
-                    DA.SetData(1, gmshLog);
+                    DA.SetData(2, gmshLog);
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.Message);
             }
         }
