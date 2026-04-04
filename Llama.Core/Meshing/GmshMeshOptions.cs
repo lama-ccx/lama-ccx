@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Llama.Core.Meshing
 {
     /// <summary>
@@ -37,5 +39,8 @@ namespace Llama.Core.Meshing
 
         /// <summary>Maximum element anisotropy ratio.</summary>
         public double AnisoMax { get; set; } = 1e10;
+
+        /// <summary>Optional local refinement zones (Distance + Threshold fields).</summary>
+        public List<GmshRefinementZone> RefinementZones { get; set; } = new List<GmshRefinementZone>();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -167,20 +168,28 @@ namespace Llama.Core.Meshing
 
                 if (isSTL)
                 {
-                    // STL produces discrete entities \u2013 use built-in kernel.
+                    // STL produces discrete entities — use built-in kernel.
+                    // ClassifySurfaces reparametrizes the surface (3rd arg = 1)
+                    // so that Gmsh can remesh it instead of keeping the STL triangulation.
                     writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         "Merge \"{0}\";", geometryFileName));
+                    writer.WriteLine("ClassifySurfaces{Pi/4, 1, 1};");
                     writer.WriteLine("CreateTopology;");
                     writer.WriteLine("Surface Loop(1) = Surface{:};");
                     writer.WriteLine("Volume(1) = {1};");
                 }
                 else
                 {
-                    // CAD files (STEP/IGES/BREP) \u2013 use OpenCASCADE kernel.
+                    // CAD files (STEP/IGES/BREP) — use OpenCASCADE kernel.
                     writer.WriteLine("SetFactory(\"OpenCASCADE\");");
                     writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         "Merge \"{0}\";", geometryFileName));
                 }
+
+                // Prevent inheriting element sizes from existing mesh vertices.
+                // Without this, STL vertex spacing overrides CharacteristicLength and fields.
+                writer.WriteLine("Mesh.CharacteristicLengthFromPoints = 0;");
+                writer.WriteLine("Mesh.CharacteristicLengthExtendFromBoundary = 0;");
 
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Mesh.CharacteristicLengthMin = {0};", opts.MinSize));
@@ -204,6 +213,56 @@ namespace Llama.Core.Meshing
                     "Mesh.QualityType = {0};", opts.QualityType));
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Mesh.AnisoMax = {0};", opts.AnisoMax));
+
+                // --- Refinement fields (Distance + Threshold per zone, combined via Min) ---
+                if (opts.RefinementZones != null && opts.RefinementZones.Count > 0)
+                {
+                    var thresholdIds = new List<int>();
+                    int fieldId = 1;
+                    int pointId = 10001;
+
+                    for (int i = 0; i < opts.RefinementZones.Count; i++)
+                    {
+                        var zone = opts.RefinementZones[i];
+                        int distId = fieldId++;
+                        int threshId = fieldId++;
+
+                        writer.WriteLine();
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Point({0}) = {{{1}, {2}, {3}}};", pointId, zone.X, zone.Y, zone.Z));
+
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}] = Distance;", distId));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].PointsList = {{{1}}};", distId, pointId));
+
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}] = Threshold;", threshId));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].InField = {1};", threshId, distId));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].SizeMin = {1};", threshId, zone.SizeMin));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].SizeMax = {1};", threshId, zone.SizeMax));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].DistMin = {1};", threshId, zone.DistMin));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Field[{0}].DistMax = {1};", threshId, zone.DistMax));
+
+                        thresholdIds.Add(threshId);
+                        pointId++;
+                    }
+
+                    int minFieldId = fieldId;
+                    writer.WriteLine();
+                    writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        "Field[{0}] = Min;", minFieldId));
+                    writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        "Field[{0}].FieldsList = {{{1}}};", minFieldId,
+                        string.Join(", ", thresholdIds)));
+                    writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        "Background Field = {0};", minFieldId));
+                }
             }
         }
 

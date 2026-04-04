@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Llama.Core.Meshing;
 using Llama.Gh.Widgets;
 using Rhino.Geometry;
@@ -167,6 +168,10 @@ namespace Llama.Gh.Components
                 "When provided, Brep/Mesh inputs are ignored.",
                 GH_ParamAccess.item);
             pManager[2].Optional = true;
+
+            pManager.AddGenericParameter("Refinement", "R",
+                "Refinement zones (from Gmsh Refinement Zone component).", GH_ParamAccess.list);
+            pManager[3].Optional = true;
         }
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -204,6 +209,25 @@ namespace Llama.Gh.Components
                 QualityType = Math.Min(_ddQualityType.Value, 2),
                 AnisoMax = _sliderAnisoMax.Value
             };
+
+            // --- Collect refinement zones -----------------------------------------
+            var zoneInputs = new List<object>();
+            DA.GetDataList(3, zoneInputs);
+            foreach (var input in zoneInputs)
+            {
+                GmshRefinementZone zone = null;
+                if (input is GmshRefinementZone z)
+                    zone = z;
+                else if (input is IGH_Goo goo)
+                    zone = goo.ScriptVariable() as GmshRefinementZone;
+
+                if (zone != null)
+                {
+                    if (zone.SizeMax <= 0)
+                        zone.SizeMax = options.MaxSize;
+                    options.RefinementZones.Add(zone);
+                }
+            }
 
             // --- Resolve geometry source ------------------------------------------
             string geometryFilePath;
