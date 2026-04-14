@@ -177,6 +177,9 @@ namespace Llama.Core.Meshing
                     writer.WriteLine("CreateTopology;");
                     writer.WriteLine("Surface Loop(1) = Surface{:};");
                     writer.WriteLine("Volume(1) = {1};");
+                    // Prevent inheriting element sizes from STL vertex spacing.
+                    writer.WriteLine("Mesh.CharacteristicLengthFromPoints = 0;");
+                    writer.WriteLine("Mesh.CharacteristicLengthExtendFromBoundary = 0;");
                 }
                 else
                 {
@@ -184,12 +187,12 @@ namespace Llama.Core.Meshing
                     writer.WriteLine("SetFactory(\"OpenCASCADE\");");
                     writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         "Merge \"{0}\";", geometryFileName));
+                    if (opts.MeshSizeFromCurvature > 0)
+                    {
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Mesh.MeshSizeFromCurvature = {0};", opts.MeshSizeFromCurvature));
+                    }
                 }
-
-                // Prevent inheriting element sizes from existing mesh vertices.
-                // Without this, STL vertex spacing overrides CharacteristicLength and fields.
-                writer.WriteLine("Mesh.CharacteristicLengthFromPoints = 0;");
-                writer.WriteLine("Mesh.CharacteristicLengthExtendFromBoundary = 0;");
 
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Mesh.CharacteristicLengthMin = {0};", opts.MinSize));
@@ -208,7 +211,8 @@ namespace Llama.Core.Meshing
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Mesh.Smoothing = {0};", opts.Smoothing));
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "Mesh.HighOrderOptimize = {0};", opts.HighOrderOptimize));
+                    "Mesh.HighOrderOptimize = {0};",
+                    opts.ElementOrder == 1 ? 0 : opts.HighOrderOptimize));
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Mesh.QualityType = {0};", opts.QualityType));
                 writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
@@ -219,7 +223,6 @@ namespace Llama.Core.Meshing
                 {
                     var thresholdIds = new List<int>();
                     int fieldId = 1;
-                    int pointId = 10001;
 
                     for (int i = 0; i < opts.RefinementZones.Count; i++)
                     {
@@ -227,14 +230,17 @@ namespace Llama.Core.Meshing
                         int distId = fieldId++;
                         int threshId = fieldId++;
 
+                        var ptVar = string.Format("refPt{0}", i + 1);
                         writer.WriteLine();
                         writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                            "Point({0}) = {{{1}, {2}, {3}}};", pointId, zone.X, zone.Y, zone.Z));
+                            "{0} = newp;", ptVar));
+                        writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "Point({0}) = {{{1}, {2}, {3}}};", ptVar, zone.X, zone.Y, zone.Z));
 
                         writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                             "Field[{0}] = Distance;", distId));
                         writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                            "Field[{0}].PointsList = {{{1}}};", distId, pointId));
+                            "Field[{0}].PointsList = {{{1}}};", distId, ptVar));
 
                         writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
                             "Field[{0}] = Threshold;", threshId));
@@ -250,7 +256,6 @@ namespace Llama.Core.Meshing
                             "Field[{0}].DistMax = {1};", threshId, zone.DistMax));
 
                         thresholdIds.Add(threshId);
-                        pointId++;
                     }
 
                     int minFieldId = fieldId;

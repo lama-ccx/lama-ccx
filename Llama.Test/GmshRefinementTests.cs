@@ -56,9 +56,9 @@ namespace Llama.Test
                 Assert.Contains("Field[5].FieldsList = {2, 4};", geo);
                 Assert.Contains("Background Field = 5;", geo);
 
-                // Points
-                Assert.Contains("Point(10001)", geo);
-                Assert.Contains("Point(10002)", geo);
+                // Points allocated via newp (safe for STEP/OpenCASCADE tag space)
+                Assert.Contains("refPt1 = newp;", geo);
+                Assert.Contains("refPt2 = newp;", geo);
             }
             finally
             {
@@ -105,6 +105,84 @@ namespace Llama.Test
             {
                 if (File.Exists(geoPath))
                     File.Delete(geoPath);
+            }
+        }
+
+        [Fact]
+        public void WriteGeoScript_StepInput_DoesNotEmitStlSizingOverrides()
+        {
+            var opts = new GmshMeshOptions { MinSize = 1, MaxSize = 5 };
+            var geoPath = Path.Combine(Path.GetTempPath(), "test_step_flags.geo");
+            try
+            {
+                GmshTetraMesher.WriteGeoScript(geoPath, "model.step", opts);
+                var geo = File.ReadAllText(geoPath);
+
+                Assert.Contains("SetFactory(\"OpenCASCADE\");", geo);
+                // STL-only flags must NOT appear for CAD files
+                Assert.DoesNotContain("Mesh.CharacteristicLengthFromPoints = 0;", geo);
+                Assert.DoesNotContain("Mesh.CharacteristicLengthExtendFromBoundary = 0;", geo);
+                // STL topology helpers must NOT appear
+                Assert.DoesNotContain("ClassifySurfaces", geo);
+                Assert.DoesNotContain("Surface Loop", geo);
+            }
+            finally
+            {
+                if (File.Exists(geoPath)) File.Delete(geoPath);
+            }
+        }
+
+        [Fact]
+        public void WriteGeoScript_StepInput_EmitsMeshSizeFromCurvature_WhenSet()
+        {
+            var opts = new GmshMeshOptions { MinSize = 1, MaxSize = 5, MeshSizeFromCurvature = 24 };
+            var geoPath = Path.Combine(Path.GetTempPath(), "test_step_curvature.geo");
+            try
+            {
+                GmshTetraMesher.WriteGeoScript(geoPath, "model.stp", opts);
+                var geo = File.ReadAllText(geoPath);
+
+                Assert.Contains("Mesh.MeshSizeFromCurvature = 24;", geo);
+            }
+            finally
+            {
+                if (File.Exists(geoPath)) File.Delete(geoPath);
+            }
+        }
+
+        [Fact]
+        public void WriteGeoScript_StepInput_DoesNotEmitCurvature_WhenZero()
+        {
+            var opts = new GmshMeshOptions { MinSize = 1, MaxSize = 5, MeshSizeFromCurvature = 0 };
+            var geoPath = Path.Combine(Path.GetTempPath(), "test_step_nocurvature.geo");
+            try
+            {
+                GmshTetraMesher.WriteGeoScript(geoPath, "model.step", opts);
+                var geo = File.ReadAllText(geoPath);
+
+                Assert.DoesNotContain("MeshSizeFromCurvature", geo);
+            }
+            finally
+            {
+                if (File.Exists(geoPath)) File.Delete(geoPath);
+            }
+        }
+
+        [Fact]
+        public void WriteGeoScript_LinearOrder_EmitsHighOrderOptimizeZero()
+        {
+            var opts = new GmshMeshOptions { MinSize = 1, MaxSize = 5, ElementOrder = 1, HighOrderOptimize = 2 };
+            var geoPath = Path.Combine(Path.GetTempPath(), "test_linear_hoopt.geo");
+            try
+            {
+                GmshTetraMesher.WriteGeoScript(geoPath, "model.stl", opts);
+                var geo = File.ReadAllText(geoPath);
+
+                Assert.Contains("Mesh.HighOrderOptimize = 0;", geo);
+            }
+            finally
+            {
+                if (File.Exists(geoPath)) File.Delete(geoPath);
             }
         }
 

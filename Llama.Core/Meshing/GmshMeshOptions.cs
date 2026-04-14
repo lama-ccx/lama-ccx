@@ -40,6 +40,13 @@ namespace Llama.Core.Meshing
         /// <summary>Maximum element anisotropy ratio.</summary>
         public double AnisoMax { get; set; } = 1e10;
 
+        /// <summary>
+        /// Number of elements per 2π for automatic curvature-based refinement (0 = disabled).
+        /// Useful for STEP/CAD files with fillets, holes, or curved surfaces.
+        /// Typical values: 12–36.
+        /// </summary>
+        public int MeshSizeFromCurvature { get; set; } = 0;
+
         /// <summary>Optional local refinement zones (Distance + Threshold fields).</summary>
         public List<GmshRefinementZone> RefinementZones { get; set; } = new List<GmshRefinementZone>();
     }
